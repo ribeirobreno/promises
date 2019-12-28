@@ -1,0 +1,45 @@
+# IDE
+.idea/
+.idea_modules/
+*.sublime-workspace
+*.sublime-project
+*.sublime-settings
+.metadata
+local.properties
+.settings/
+.buildpath
+nbproject/
+nbbuild/
+nbdist/
+.nb-gradle/
+.vscode/
+*.code-workspace
+
+# Tools
+.vagrant/
+npm-debug.log
+yarn-error.log
+
+# Vim
+#  (See: https://github.com/github/gitignore/blob/master/Global/Vim.gitignore)
+[._]*.s[a-v][a-z]
+[._]*.sw[a-p]
+[._]s[a-rt-v][a-z]
+[._]ss[a-gi-z]
+[._]sw[a-p]
+Session.vim
+.netrwhist
+*~
+[._]*.un~
+
+# Dependencies
+vendor/*
+node_modules/*
+/composer.lock
+/composer.phar
+
+# OS Junk
+Thumbs.db
+[Dd]esktop.ini
+.DS_Store
+._.DS_Store
