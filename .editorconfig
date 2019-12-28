@@ -1,0 +1,24 @@
+# Learn about this: https://EditorConfig.org
+
+root = true
+
+# Default
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+indent_style = tab
+max_line_length = 140
+
+# PSR https://www.php-fig.org/psr/
+[{composer.json,*.php}]
+indent_style = space
+indent_size = 4
+
+# NPM & YAML style
+[{package.json,*.yml,*.yaml}]
+indent_style = space
+indent_size = 2
+
+[*.md]
+trim_trailing_whitespace = false
