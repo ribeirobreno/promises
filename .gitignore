@@ -19,6 +19,7 @@ nbdist/
 .vagrant/
 npm-debug.log
 yarn-error.log
+.phpunit.result.cache
 
 # Vim
 #  (See: https://github.com/github/gitignore/blob/master/Global/Vim.gitignore)
