@@ -1,4 +1,4 @@
-version: 2
+version: 2.1
 defaults:
   steps: &test-steps
     - checkout
@@ -18,3 +18,10 @@ jobs:
     docker:
       image: circleci/php:7.4
     steps: *test-steps
+workflows:
+  version: 2
+  test-all-platforms:
+    jobs:
+      - test-7.2
+      - test-7.3
+      - test-7.4
