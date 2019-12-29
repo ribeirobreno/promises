@@ -6,15 +6,15 @@ defaults:
     - run: composer install
     - run: composer test
 jobs:
-  test-7.2:
+  test-72:
     docker:
       image: circleci/php:7.2
     steps: *test-steps
-  test-7.3:
+  test-73:
     docker:
       image: circleci/php:7.3
     steps: *test-steps
-  test-7.4:
+  test-74:
     docker:
       image: circleci/php:7.4
     steps: *test-steps
@@ -22,6 +22,6 @@ workflows:
   version: 2
   test-all-platforms:
     jobs:
-      - test-7.2
-      - test-7.3
-      - test-7.4
+      - test-72
+      - test-73
+      - test-74
