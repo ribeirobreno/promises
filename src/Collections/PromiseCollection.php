@@ -35,12 +35,18 @@ class PromiseCollection
     private $settledPromise;
 
     /**
+     * @var FunctionCollection
+     */
+    private $onFirst;
+
+    /**
      * @param PromiseInterface[] $promises
      */
     public function __construct(array $promises)
     {
         $this->promises = $promises;
 
+        $this->onFirst = new FunctionCollection();
         $this->settledPromise = new Promise(function ($resolve, $reject) {
             foreach ($this->promises as $k => $promise) {
                 $promise
@@ -58,6 +64,7 @@ class PromiseCollection
                     ->finally(function () use ($k, $resolve) {
                         if (is_null($this->first)) {
                             $this->first = $k;
+                            call_user_func($this->onFirst);
                         }
 
                         if ($this->allOutcomesCollected()) {
@@ -77,26 +84,14 @@ class PromiseCollection
         }
 
         return new Promise(function ($resolve, $reject) {
-            $values = [];
-            $toSettle = count($this->promises);
             foreach ($this->promises as $k => $promise) {
-                $values[$k] = null;
-                $promise
-                    ->then(
-                        function ($value) use ($resolve, $k, &$toSettle, &$values) {
-                            --$toSettle;
-                            $values[$k] = $value;
-                            if ($toSettle === 0) {
-                                call_user_func($resolve, $values);
-                            }
-                        },
-                        function ($reason) use ($reject, &$toSettle) {
-                            if ($toSettle > 0) {
-                                $toSettle = 0;
-                                call_user_func($reject, $reason);
-                            }
-                        }
-                    );
+                $promise->finally(function () use ($resolve, $reject) {
+                    if ($this->isAnyRejected()) {
+                        call_user_func($reject, $this->getFirstRejectedOutcome()->reason);
+                    } else if ($this->allOutcomesCollected()) {
+                        call_user_func($resolve, $this->getValues());
+                    }
+                });
             }
         });
     }
@@ -117,7 +112,14 @@ class PromiseCollection
         $first = $this->getFirstOutcome();
         if (is_null($first)) {
             return new Promise(function ($resolve, $reject) {
-                ;
+                $this->onFirst->addCallable(function () use ($resolve, $reject) {
+                    $first = $this->getFirstOutcome();
+                    if ($first->status === PromiseOutcome::FULFILLED) {
+                        call_user_func($resolve, $first->value);
+                    } else {
+                        call_user_func($reject, $first->reason);
+                    }
+                });
             });
         }
 
