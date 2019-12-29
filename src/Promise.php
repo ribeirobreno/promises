@@ -80,11 +80,13 @@ class Promise implements PromiseInterface
     protected function getResolveHandler()
     {
         return function ($value) {
-            $this->value = $value;
-            $this->settled = true;
-            $this->rejected = false;
-            call_user_func($this->onFulfilled, $this->value);
-            call_user_func($this->onFinally);
+            if (!$this->settled) {
+                $this->value = $value;
+                $this->settled = true;
+                $this->rejected = false;
+                call_user_func($this->onFulfilled, $this->value);
+                call_user_func($this->onFinally);
+            }
         };
     }
 
@@ -94,11 +96,13 @@ class Promise implements PromiseInterface
     protected function getRejectHandler()
     {
         return function ($reason) {
-            $this->rejectionReason = $reason;
-            $this->settled = true;
-            $this->rejected = true;
-            call_user_func($this->onRejected, $this->rejectionReason);
-            call_user_func($this->onFinally);
+            if (!$this->settled) {
+                $this->rejectionReason = $reason;
+                $this->settled = true;
+                $this->rejected = true;
+                call_user_func($this->onRejected, $this->rejectionReason);
+                call_user_func($this->onFinally);
+            }
         };
     }
 
@@ -156,6 +160,7 @@ class Promise implements PromiseInterface
 
     /**
      * @inheritDoc
+     * @todo Callback returns a promise.
      */
     public function then(callable $onFulfilled = null, callable $onRejected = null): PromiseInterface
     {
@@ -207,6 +212,7 @@ class Promise implements PromiseInterface
 
     /**
      * @inheritDoc
+     * @todo Callback returns a promise.
      */
     public function finally(callable $callback): PromiseInterface
     {
