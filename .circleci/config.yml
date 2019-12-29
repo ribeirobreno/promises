@@ -1,9 +1,10 @@
 version: 2
 defaults:
   steps: &test-steps
-    - composer self-update --stable
-    - composer install
-    - composer test
+    - checkout
+    - run: composer self-update --stable
+    - run: composer install
+    - run: composer test
 jobs:
   test-7.2:
     docker:
