@@ -84,8 +84,8 @@ class Promise implements PromiseInterface
                 $this->value = $value;
                 $this->settled = true;
                 $this->rejected = false;
-                call_user_func($this->onFulfilled, $this->value);
-                call_user_func($this->onFinally);
+                $this->onFulfilled->callAll($this->value);
+                $this->onFinally->callAll();
             }
         };
     }
@@ -100,8 +100,8 @@ class Promise implements PromiseInterface
                 $this->rejectionReason = $reason;
                 $this->settled = true;
                 $this->rejected = true;
-                call_user_func($this->onRejected, $this->rejectionReason);
-                call_user_func($this->onFinally);
+                $this->onRejected->callAll($this->rejectionReason);
+                $this->onFinally->callAll();
             }
         };
     }

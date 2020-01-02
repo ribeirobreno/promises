@@ -40,6 +40,11 @@ class PromiseCollection
     private $onFirst;
 
     /**
+     * @var FunctionCollection
+     */
+    private $onAllSettled;
+
+    /**
      * @param PromiseInterface[] $promises
      */
     public function __construct(array $promises)
@@ -47,32 +52,59 @@ class PromiseCollection
         $this->promises = $promises;
 
         $this->onFirst = new FunctionCollection();
+        $this->onAllSettled = new FunctionCollection();
+
         $this->settledPromise = new Promise(function ($resolve, $reject) {
+            $this->onAllSettled->addCallable($resolve);
             foreach ($this->promises as $k => $promise) {
                 $promise
-                    ->then(
-                        function ($value) use ($k) {
-                            $this->outcomes[$k] = new PromiseOutcome(PromiseOutcome::FULFILLED, $value);
-                        },
-                        function ($reason) use ($k) {
-                            if (is_null($this->firstRejected)) {
-                                $this->firstRejected = $k;
-                            }
-                            $this->outcomes[$k] = new PromiseOutcome(PromiseOutcome::REJECTED, $reason);
-                        }
-                    )
-                    ->finally(function () use ($k, $resolve) {
-                        if (is_null($this->first)) {
-                            $this->first = $k;
-                            call_user_func($this->onFirst);
-                        }
-
-                        if ($this->allOutcomesCollected()) {
-                            call_user_func($resolve, $this->outcomes);
-                        }
-                    });
+                    ->then($this->getPromiseOutcomeFulfilledCallback($k), $this->getPromiseOutcomeRejectedCallback($k))
+                    ->finally($this->getPromiseFinishedCallback($k));
             }
         });
+    }
+
+    /**
+     * @param string|int $k
+     * @return \Closure
+     */
+    private function getPromiseOutcomeFulfilledCallback($k)
+    {
+        return function ($value) use ($k) {
+            $this->outcomes[$k] = new PromiseOutcome(PromiseOutcome::FULFILLED, $value);
+        };
+    }
+
+    /**
+     * @param string|int $k
+     * @return \Closure
+     */
+    private function getPromiseOutcomeRejectedCallback($k)
+    {
+        return function ($reason) use ($k) {
+            if (is_null($this->firstRejected)) {
+                $this->firstRejected = $k;
+            }
+            $this->outcomes[$k] = new PromiseOutcome(PromiseOutcome::REJECTED, $reason);
+        };
+    }
+
+    /**
+     * @param string|int $k
+     * @return \Closure
+     */
+    private function getPromiseFinishedCallback($k)
+    {
+        return function () use ($k) {
+            if (is_null($this->first)) {
+                $this->first = $k;
+                $this->onFirst->callAll();
+            }
+
+            if ($this->allOutcomesCollected()) {
+                $this->onAllSettled->callAll($this->outcomes);
+            }
+        };
     }
 
     public function getAllPromise(): PromiseInterface
