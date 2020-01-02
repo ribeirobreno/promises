@@ -2,6 +2,12 @@ version: 2.1
 defaults:
   steps: &test-steps
     - checkout
+    - run: |
+        if [[ -n "$CIRCLE_PULL_REQUEST" ]]; then
+            curl $(php -r 'echo preg_replace("|^(https?://)(www\.)?github.com/(.+/pull).*(/\d+)|i", "$1api.github.com/repos/$3s$4", getenv("CIRCLE_CI_PULL_REQUEST"));') \
+              -o pr-info.json
+            git fetch && git merge origin/$(php -r 'echo json_decode(file_get_contents("tmp.json"), true)["base"]["ref"];') --no-edit
+        fi
     - run: composer self-update --stable
     - run: composer install
     - run: composer test
