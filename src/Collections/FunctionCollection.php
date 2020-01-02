@@ -29,6 +29,15 @@ class FunctionCollection
     }
 
     /**
+     * @param mixed ...$args
+     * @return array
+     */
+    public function callAll(...$args): array
+    {
+        return call_user_func_array($this, $args);
+    }
+
+    /**
      * @return callable[]|\Closure[]
      */
     public function getCallables()
